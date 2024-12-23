@@ -184,5 +184,25 @@ $stationDetails = [
                 new Dashboard(historicalData);
             });
         </script>
+
+        <!-- To auto refresh using AJAX -->
+         <script>
+            // Pass PHP data to JavaScript (limited to last 8 hours)
+            const historicalData = <?= json_encode($historicalData) ?>;
+
+            // Add refresh function
+            function refreshCurrentConditions() {
+                fetch('api/current-conditions.php')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('currentSpeed').textContent = data.wind_speed.toFixed(1) + 'm/s';
+                    document.getElementById('currentDirection').textContent = data.wind_direction + '°';
+                    document.getElementById('powerOutput').textContent = data.power_output.toFixed(2) + 'kW';
+                });
+            }
+
+            // Refresh every 5 minutes
+            setInterval(refreshCurrentConditions, 300000);
+         </script>
     </body>
 </html>

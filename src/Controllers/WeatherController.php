@@ -42,21 +42,22 @@ class WeatherController {
     }
 
     public function getHistoricalData() {
-        // Generate 24 hours of sample data
-        $historicalData = [];
-        $currentTime = time();
+        // Query last 24 hours of data from database
+        $historicalData = $this->windData->getLastDayReadings();
         
-        for ($i = 24; $i >= 0; $i--) {
-            $timestamp = $currentTime - ($i * 3600); // Go back in time by hours
-            $historicalData[] = [
-                'timestamp' => date('Y-m-d H:i:s', $timestamp),
-                'wind_speed' => rand(2, 15) + (rand(0, 100) / 100), // Random wind speed between 2-15 m/s
-                'wind_direction' => rand(0, 359),
-                'power_output' => rand(50, 200) / 10
-            ];
+        // If no data is available, return empty array
+        if (empty($historicalData)) {
+            return [];
         }
         
-        return $historicalData;
+        return array_map(function($reading) {
+            return [
+                'timestamp' => date('Y-m-d H:i:s', strtotime($reading['timestamp'])),
+                'wind_speed' => (float)$reading['wind_speed'],
+                'wind_direction' => (int)$reading['wind_direction'],
+                'power_output' => $this->calculatePowerOutput($reading['wind_speed'])
+            ];
+        }, $historicalData);
     }
 
     public function getWindDirectionLabel($degrees) {

@@ -1,4 +1,10 @@
 <?php
+require_once __DIR__ . '/../vendor/autoload.php';
+
+// Load .env file
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->load();
+
 return [
     'database' => [
         'host' => $_ENV['DB_HOST'] ?? 'localhost',
@@ -8,7 +14,7 @@ return [
     ],
     'openai' => [
         'api_key' => $_ENV['OPENAI_API_KEY'] ?? '',
-        'model' => 'gpt-4',
+        'model' => 'gpt-3.5-turbo',
     ],
     'app' => [
         'name' => 'WindPower Dashboard',

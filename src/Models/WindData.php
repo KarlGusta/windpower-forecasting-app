@@ -1,4 +1,8 @@
 <?php
+namespace Models;
+
+use config\database;
+
 class WindData {
     private $db;
 
@@ -13,13 +17,15 @@ class WindData {
     }
 
     public function saveData($speed, $direction, $power_output) {
-        $stmt = $this->db->prepare("INSERT INTO wind_data (wind_speed, wind_direction, power_output, timestamp) VALUES (?, ?, ?, NOW()");
-        return $stmt->execute([$speed, $direction, $power_output]);
+        $stmt = $this->db->prepare("INSERT INTO wind_data (wind_speed, wind_direction, power_output, timestamp) VALUES (?, ?, ?, NOW())");
+        $stmt->bind_param("ddd", $speed, $direction, $power_output);
+        return $stmt->execute();
     }
 
     public function getHistoricalData($days = 30) {
         $stmt = $this->db->prepare("SELECT * FROM wind_data WHERE timestamp >= NOW() - INTERVAL ? DAY ORDER BY timestamp ASC");
-        $stmt->execute([$days]);
+        $stmt->bind_param("i", $days);
+        $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 }

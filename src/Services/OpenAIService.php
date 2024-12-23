@@ -35,8 +35,14 @@ class OpenAIService {
                     ]);
 
                     $response = curl_exec($curl);
+                    $decoded_response = json_decode($response, true);
+                    
+                    // Print the response for debugging
+                    echo "OpenAI Response:\n";
+                    print_r($decoded_response);
+                    
                     curl_close($curl);
 
-                    return json_decode($response, true);
+                    return $decoded_response;
     }
 }

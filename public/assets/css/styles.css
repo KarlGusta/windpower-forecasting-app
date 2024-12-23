@@ -1,0 +1,19 @@
+.forecast-content {
+    @apply bg-white p-4 rounded-lg shadow-md;
+}
+
+.data-card {
+    @apply bg-white p-6 rounded-lg shadow-md;
+}
+
+.chart-container {
+    @apply bg-white p-6 rounded-lg shadow-md mt-6;
+}
+
+.metric-value {
+    @apply text-2xl font-bold text-gray-800;
+}
+
+.metric-label {
+    @apply text-sm text-gray-600;
+}

@@ -39,7 +39,22 @@ class WindData {
         $stmt = $this->db->prepare("SELECT timestamp, wind_speed, wind_direction 
             FROM wind_data 
             WHERE timestamp >= NOW() - INTERVAL 24 HOUR 
+            AND HOUR(timestamp) IN (8, 13, 16)
             ORDER BY timestamp ASC");
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function getLastMonthReadings() {
+        $stmt = $this->db->prepare("SELECT DATE(timestamp) as date,
+            AVG(wind_speed) as avg_wind_speed,
+            MAX(wind_speed) as max_wind_speed,
+            AVG(power_output) as avg_power_output,
+            SUM(power_output) * 24 / COUNT(*) as total_energy
+            FROM wind_data 
+            WHERE timestamp >= NOW() - INTERVAL 30 DAY 
+            GROUP BY DATE(timestamp)
+            ORDER BY date ASC");
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }

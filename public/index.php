@@ -25,12 +25,12 @@ $forecast = $weatherController->getForecast();
 
 // Add station details
 $stationDetails = [
-    'name' => 'Lake Turkana Wind Power (LTWP)',
-    'location' => 'Loiyangalani, Marsabit County, Kenya',
-    'coordinates' => '2.5072° N, 36.7256° E',
-    'height' => '450m above sea level',
+    'name' => 'Ngong Wind Farm',
+    'location' => 'Ngong Hills, Kajiado County, Kenya',
+    'coordinates' => '1.3751° S, 36.6719° E',
+    'height' => 'Approximately 2,000m above sea level',
     'turbine_model' => 'Vestas V52-850 kW',
-    'operational_since' => '2018'
+    'operational_since' => '2009'
 ];
 
 ?>
@@ -54,10 +54,10 @@ $stationDetails = [
         }
     </style>
     <script>
-        // Auto reload page every minute
+        // Auto reload page every 5 minutes
         setTimeout(() => {
             window.location.reload();
-        }, 160000);
+        }, 800000);
     </script>
 </head>
 
@@ -130,7 +130,7 @@ $stationDetails = [
                             <div>
                                 <p class="text-base text-gray-600">Estimated Power Output</p>
                                 <p class="text-base font-bold text-green-600" id="powerOutput">
-                                    <?= number_format($currentConditions['power_output'], 2) ?> kW
+                                    <?= number_format($currentConditions['power_output'], 3) ?> MW
                                 </p>
                             </div>
                         </div>
@@ -159,6 +159,12 @@ $stationDetails = [
                     <div class="bg-white p-4 rounded-3xl shadow-md">
                         <h2 class="text-lg font-semibold mb-2">📊 Historical Wind Data</h2>
                         <div id="windChart"></div>
+                    </div>
+
+                    <!-- Powercurve Chart -->
+                    <div class="bg-white p-4 rounded-3xl shadow-md">
+                        <h2 class="text-lg font-semibold mb-2">📈 Power Curve</h2>
+                        <div id="powerCurve"></div>
                     </div>
                 </div>
             </div>
@@ -233,7 +239,7 @@ $stationDetails = [
                             <div>
                                 <p class="text-base text-gray-600">Estimated Power Output</p>
                                 <p class="text-base font-bold text-green-600" id="powerOutputMobile">
-                                    <?= number_format($currentConditions['power_output'], 2) ?> kW
+                                    <?= number_format($currentConditions['power_output'], 3) ?> MW
                                 </p>
                             </div>
                         </div>
@@ -262,7 +268,13 @@ $stationDetails = [
                     <div class="bg-white p-4 rounded-3xl shadow-md">
                         <h2 class="text-lg font-semibold mb-2">📊 Historical Wind Data</h2>
                         <div id="windChartMobile"></div>
-                    </div>                    
+                    </div>
+
+                    <!-- Powercurve Chart for Mobile -->
+                    <div class="bg-white p-4 rounded-3xl shadow-md">
+                        <h2 class="text-lg font-semibold mb-2">📈 Power Curve</h2>
+                        <div id="powerCurveMobile"></div>
+                    </div>
                 </div>
 
             </div>
@@ -288,17 +300,17 @@ $stationDetails = [
             // Simulate small changes
             const newSpeed = simulateWindChange(currentSpeed, -0.3, 0.3).toFixed(1);
             const newDirection = (currentDirection + Math.random() * 5 - 2.5) % 360;
-            const newPower = simulateWindChange(currentPower, -5, 5).toFixed(2);
+            const newPower = simulateWindChange(currentPower, -0.005, 0.005).toFixed(3);
 
             // Update desktop values
             document.getElementById('currentSpeed').textContent = newSpeed + ' m/s';
             document.getElementById('currentDirection').textContent = Math.round(newDirection) + '°';
-            document.getElementById('powerOutput').textContent = newPower + ' kW';
+            document.getElementById('powerOutput').textContent = newPower + ' MW';
 
             // Update mobile values
             document.getElementById('currentSpeedMobile').textContent = newSpeed + ' m/s';
             document.getElementById('currentDirectionMobile').textContent = Math.round(newDirection) + '°';
-            document.getElementById('powerOutputMobile').textContent = newPower + ' kW';
+            document.getElementById('powerOutputMobile').textContent = newPower + ' MW';
 
             // Add console log to confirm refresh
             console.log('Page data refreshed at:', new Date().toLocaleTimeString());
@@ -326,7 +338,7 @@ $stationDetails = [
                                 download: true,
                                 // selection: true,
                                 zoom: true,
-                                zoomin: true,                                
+                                zoomin: true,
                                 // pan: true,
                                 // reset: true,
                                 zoomout: true
@@ -382,6 +394,99 @@ $stationDetails = [
                 chartMobile.render();
             })
             .catch(error => console.error('Error loading wind data:', error));
+    </script>
+
+    <!-- Powercurve Chart -->
+    <script>
+    fetch('../api/get-power-curve-data.php')
+        .then(response => {
+            // First check if the response is ok
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            // Log the raw response for debugging
+            response.clone().text().then(text => console.log('Raw response:', text));
+            return response.json();
+        })
+        .then(response => {
+            // Check if we have a successful response with data
+            if (response.status !== 'success' || !response.data) {
+                throw new Error(response.message || 'Failed to load power curve data');
+            }
+
+            const options = {
+                series: [{
+                    name: 'Power Output',
+                    data: response.data.map(row => [
+                        parseFloat(row.wind_speed),
+                        parseFloat(row.power_output)
+                    ])
+                }],
+                chart: {
+                    type: 'line',
+                    height: 280,
+                    zoom: {
+                        enabled: true
+                    },
+                    toolbar: {
+                        show: true,
+                        tools: {
+                            download: true,
+                            zoom: true,
+                            zoomin: true,
+                            zoomout: true
+                        }
+                    }
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                markers: {
+                    size: 4,
+                    hover: {
+                        size: 6
+                    }
+                },
+                xaxis: {
+                    title: {
+                        text: 'Wind Speed (m/s)'
+                    },
+                    type: 'numeric'
+                },
+                yaxis: {
+                    title: {
+                        text: 'Power Output (kW)'
+                    }
+                },
+                tooltip: {
+                    shared: false,
+                    y: {
+                        formatter: function(value) {
+                            return value + ' kW';
+                        }
+                    },
+                    x: {
+                        formatter: function(value) {
+                            return value + ' m/s';
+                        }
+                    }
+                },
+                colors: ["#E0A82E"]
+            };
+
+            const chart = new ApexCharts(document.querySelector("#powerCurve"), options);
+            const chartMobile = new ApexCharts(document.querySelector("#powerCurveMobile"), options);
+            chart.render();
+            chartMobile.render();
+        })
+        .catch(error => {
+            console.error('Error loading power curve data:', error);
+            // Show more user-friendly error message
+            const errorMessage = '<div class="p-4 text-red-600">Unable to load power curve data. Please try again later.</div>';
+            document.querySelector("#powerCurve").innerHTML = errorMessage;
+            document.querySelector("#powerCurveMobile").innerHTML = errorMessage;
+        });
     </script>
 </body>
 

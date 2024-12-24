@@ -32,8 +32,17 @@ class WeatherController {
         $airDensity = 1.225; // kg/m³
         $sweptArea = 50; // m² (adjust based on your turbine)
         $efficiency = 0.35; // typical wind turbine efficiency
+        $numberOfTurbines = 122; // total number of turbines in the wind farm
+        $maxTurbineCapacity = 0.85; // Maximum capacity of 850kW = 0.85MW per turbine
         
-        return 0.5 * $airDensity * $sweptArea * pow($windSpeed, 3) * $efficiency / 1000; // Convert to kW
+        // Calculate power for a single turbine
+        $singleTurbinePower = 0.5 * $airDensity * $sweptArea * pow($windSpeed, 3) * $efficiency / 1000; // Power in MW
+        
+        // Cap the power at the maximum turbine capacity
+        $singleTurbinePower = min($singleTurbinePower, $maxTurbineCapacity);
+        
+        // Multiply by number of turbines to get total farm output
+        return $singleTurbinePower * $numberOfTurbines;
     }
 
     public function getForecast() {

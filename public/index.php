@@ -456,14 +456,14 @@ $stationDetails = [
                 },
                 yaxis: {
                     title: {
-                        text: 'Power Output (kW)'
+                        text: 'Power Output (MW)'
                     }
                 },
                 tooltip: {
                     shared: false,
                     y: {
                         formatter: function(value) {
-                            return value + ' kW';
+                            return value.toFixed(3) + ' MW'
                         }
                     },
                     x: {

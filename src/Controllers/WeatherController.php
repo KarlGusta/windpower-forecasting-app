@@ -27,7 +27,7 @@ class WeatherController {
         ];
     }
 
-    private function calculatePowerOutput($windSpeed) {
+    public function calculatePowerOutput($windSpeed) {
         // Simplified power calculation
         $airDensity = 1.225; // kg/m³
         $sweptArea = 50; // m² (adjust based on your turbine)

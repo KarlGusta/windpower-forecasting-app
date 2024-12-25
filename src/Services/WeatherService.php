@@ -157,18 +157,23 @@ class WeatherService
 
     private function calculatePowerOutput($windSpeed)
     {
-        // Basic power output calculation using the power curve
-        // P = 0.5 * ρ * A * v³ * Cp
-        // where ρ is air density (≈ 1.225 kg/m³), A is swept area, v is wind speed, Cp is power coefficient
-
+        // Constants
         $airDensity = 1.225; // kg/m³
-        $rotorRadius = 50; // meters (adjust based on your turbine size)
+        $rotorRadius = 50; // meters
         $sweptArea = pi() * pow($rotorRadius, 2);
-        $powerCoefficient = 0.4; // typical value between 0.35-0.45
+        $powerCoefficient = 0.4;
+        $numberOfTurbines = 122;
+        $maxTurbineCapacity = 850; // kW
 
-        $powerOutput = 0.5 * $airDensity * $sweptArea * pow($windSpeed, 3) * $powerCoefficient;
+        // Calculate theoretical power output for one turbine (in kilowatts)
+        $singleTurbinePower = (0.5 * $airDensity * $sweptArea * pow($windSpeed, 3) * $powerCoefficient) / 1000;
 
-        // Convert to megawatts and round to 2 decimal places
-        return round($powerOutput / 1000000, 2);
+        // Limit to maximum capacity per turbine
+        $actualTurbinePower = min($singleTurbinePower, $maxTurbineCapacity);
+
+        // Calculate total farm output in megawatts (122 turbines)
+        $totalPowerOutput = ($actualTurbinePower * $numberOfTurbines) / 1000;
+
+        return round($totalPowerOutput, 2);
     }
 }
